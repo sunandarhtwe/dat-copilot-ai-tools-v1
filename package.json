@@ -1,0 +1,20 @@
+{
+  "name": "dat-ai-testcase-copilot-bridge-v5",
+  "version": "5.0.0-analyze-select-generate",
+  "description": "DAT AI Test Case Generator v5.0: complete redesign with an Analyze -> Select -> Generate workflow, folder (sub-folder) uploads, a keyword-driven checklist of AI-extracted checkpoints the user selects before generating, and a data-driven result table/Excel export whose columns adapt to whatever fields the generated cases actually contain. Uses the DAT Copilot Bridge VS Code extension for GitHub Copilot access, with Document Classifier, Knowledge Base Cache, Coverage Engine, duplicate removal, editable preview with Save/Cancel, add/delete rows, language-aware download, and Browser Close Cleanup carried over from v4.0.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "mammoth": "^1.8.0",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "xlsx": "^0.18.5",
+    "jszip": "^3.10.1"
+  }
+}

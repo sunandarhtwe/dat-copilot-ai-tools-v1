@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DAT AI Test Case Generator - Copilot Bridge v5.0</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-block">
+        <img src="datlogo.png" alt="DAT" class="brand-logo" />
+        <div>
+          <div class="brand-title" data-i18n="appTitle">AI テストケース ジェネレーター</div>
+          <small>Copilot Bridge v5.0</small>
+        </div>
+      </div>
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="generate"><span>✣</span><b data-i18n="navGenerate">テストケース生成</b></button>
+      </nav>
+    </aside>
+
+    <section class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebarToggle" class="sidebar-toggle" type="button" title="サイドバーの表示/非表示" aria-label="Toggle sidebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="top-actions">
+          <div class="lang-toggle" aria-label="Language">
+            <button id="jaBtn" class="active" type="button">日本語</button>
+            <button id="enBtn" type="button">English</button>
+          </div>
+          <span class="project-name">DAT-SONAR-FR</span>
+          <span class="focus-icon">⛶</span>
+        </div>
+      </header>
+
+      <main class="content">
+        <section id="generateView" class="view active">
+          <div class="steps">
+            <div class="step" id="step1"><b>1</b><span data-i18n="step1">資料アップロード</span></div><i></i>
+            <div class="step" id="step2"><b>2</b><span data-i18n="step2">分析</span></div><i></i>
+            <div class="step" id="step3"><b>3</b><span data-i18n="step3">生成</span></div>
+          </div>
+
+          <div class="generation-layout">
+            <div class="gen-col-left">
+              <!-- Step 1+2 setup: upload (individual files, or a whole -->
+              <!-- folder incl. sub-folders), test case type, keyword, Analyze -->
+              <div class="work-card upload-only-card">
+                <h2 data-i18n="uploadTitle">設計書をアップロード</h2>
+
+                <div class="upload-row">
+                  <label class="upload-btn" for="documents">
+                    <strong data-i18n="uploadFilesBtnTitle">ファイルを選択</strong>
+                    <span data-i18n="uploadFilesBtnSub">個別のファイルを選ぶ</span>
+                  </label>
+                  <label class="upload-btn" for="folderInput">
+                    <strong data-i18n="uploadFolderBtnTitle">フォルダを選択</strong>
+                    <span data-i18n="uploadFolderBtnSub">サブフォルダも含む</span>
+                  </label>
+                </div>
+                <input type="file" id="documents" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.md,.csv,.pptx,.ppt" />
+                <input type="file" id="folderInput" webkitdirectory directory multiple />
+
+                <div id="fileList" class="file-list empty"></div>
+
+                <label class="field-label gen-field-spaced" data-i18n="testTypeLabel">テストケース種別</label>
+                <div id="testTypeGroup" class="test-type-group">
+                  <label class="test-type-option">
+                    <input type="radio" name="testType" value="integration" checked />
+                    <span data-i18n="testTypeIntegration">結合テスト (Integration)</span>
+                  </label>
+                  <label class="test-type-option">
+                    <input type="radio" name="testType" value="unit" />
+                    <span data-i18n="testTypeUnit">単体テスト (Unit)</span>
+                  </label>
+                  <label class="test-type-option">
+                    <input type="radio" name="testType" value="comprehensive" />
+                    <span data-i18n="testTypeComprehensive">総合テスト (Comprehensive)</span>
+                  </label>
+                </div>
+
+                <label class="field-label gen-field-spaced"><span data-i18n="keywordLabel">キーワード</span> <span class="req">*</span></label>
+                <textarea id="keyword" class="text-input" placeholder="例：入力チェック、画面遷移、DB更新" data-i18n-placeholder="keywordPlaceholder"></textarea>
+
+                <label class="field-label gen-field-spaced" data-i18n="functionNameLabel">対象機能名（任意）</label>
+                <textarea id="functionName" class="text-input" placeholder="例：定時定額（新規・変更）" data-i18n-placeholder="functionNamePlaceholder"></textarea>
+
+                <button id="analyzeBtn" class="primary" data-i18n="analyzeBtn">🔍 Analysis（キーワードで資料を分析）</button>
+                <div id="analyzeMessage" class="message hidden"></div>
+              </div>
+            </div>
+
+            <div class="gen-col-right">
+              <!-- Step 3 (part A): analysis checklist, shown ABOVE the -->
+              <!-- generated test case preview — user picks which checkpoints -->
+              <!-- should actually become test cases. -->
+              <div class="work-card checklist-card hidden" id="checklistCard">
+                <h2 data-i18n="checklistTitle">分析結果 - 対象チェックポイントを選択</h2>
+                <div id="analysisSummary" class="analysis-summary hidden"></div>
+                <div id="analysisCoverage" class="analysis-coverage hidden"></div>
+                <div class="checklist-toolbar">
+                  <button id="selectAllBtn" class="secondary-btn" type="button" data-i18n="selectAllBtn">すべて選択</button>
+                  <button id="selectNoneBtn" class="secondary-btn" type="button" data-i18n="selectNoneBtn">選択解除</button>
+                  <span id="selectedCount" class="selected-count">0 / 0</span>
+                </div>
+                <div class="checklist-table-wrap">
+                  <table class="checklist-table">
+                    <thead>
+                      <tr>
+                        <th class="ct-check"></th>
+                        <th class="ct-category" data-i18n="checklistColCategory">カテゴリ</th>
+                        <th class="ct-item" data-i18n="checklistColTitle">項目</th>
+                        <th class="ct-detail" data-i18n="checklistColDetail">詳細情報</th>
+                        <th class="ct-example" data-i18n="checklistColExample">テストデータ例</th>
+                      </tr>
+                    </thead>
+                    <tbody id="checklistBody"></tbody>
+                  </table>
+                </div>
+                <button id="generateBtn" class="primary" disabled data-i18n="generateBtn">✣ 選択項目でテストケースを生成</button>
+                <div id="message" class="message hidden"></div>
+              </div>
+
+              <div class="work-card preview-card">
+                <div class="preview-header">
+                  <h2 data-i18n="previewTitle">生成済みテストケース プレビュー</h2>
+                  <div class="preview-actions">
+                    <button id="toggleExtraColsBtn" class="secondary-btn hidden" type="button" data-i18n="showExtraCols">＋ 追加項目を表示</button>
+                    <button id="addRowBtn" class="secondary-btn hidden" type="button" data-i18n="addRowBtn">＋ 行を追加</button>
+                    <span id="dirtyBadge" class="dirty-badge hidden" data-i18n="unsavedBadge">未保存の変更</span>
+                    <button id="cancelEditBtn" class="secondary-btn hidden" type="button" data-i18n="cancelBtn">キャンセル</button>
+                    <button id="saveEditBtn" class="secondary-btn hidden" type="button" data-i18n="saveBtn">💾 保存</button>
+                    <a id="downloadBtn" class="download disabled" href="#" data-i18n="downloadBtn">⬇ Excel ダウンロード</a>
+                  </div>
+                </div>
+                <div class="sheet-wrap">
+                  <table class="sheet" id="caseTable">
+                    <tbody id="caseBody">
+                      <tr><td class="placeholder" data-i18n="placeholder">ドキュメントをアップロードし、キーワードで分析してから、テストケースを生成してください。</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h2 class="log-title" data-i18n="logTitle">ログ</h2>
+                <div class="log-box"><pre id="log">Ready.</pre></div>
+
+                <div id="coveragePanel" class="execute-placeholder coverage-panel hidden">
+                  <h2 data-i18n="coverageTitle">Coverage Engine</h2>
+                  <div id="coverageCards" class="result-cards"></div>
+                  <div id="coverageUncovered"></div>
+                  <div id="generateKeywordCoverage" class="analysis-coverage hidden"></div>
+                </div>
+
+                <div class="execute-placeholder">
+                  <h2 data-i18n="executeTitle">実行結果（Phase 2 予定）</h2>
+                  <div class="result-cards">
+                    <div><strong>2</strong><span data-i18n="executedSuites">実行済みテストスイート</span></div>
+                    <div><strong>85%</strong><span data-i18n="successRate">成功率</span></div>
+                    <div><strong>Phase 2</strong><span data-i18n="playwrightPlan">Playwright 実行機能を追加予定</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer>© 2026 DAT AI Tool - GitHub Copilot Bridge PoC</footer>
+    </section>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
